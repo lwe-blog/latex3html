@@ -64,15 +64,15 @@ endthm = "</em></blockquote>\n<p>\n"
 
 
 beginproof = "<em>Proof:</em> "
-endproof = "$latex \Box&fg=000000$\n\n"
+endproof = "$$\\tag*{$\\blacksquare$}$$"
 
-section = "\n<p>\n<b>_SecNumb_. _SecName_ </b>\n<p>\n"
-sectionstar = "\n<p>\n<b> _SecName_ </b>\n<p>\n"
-subsection = "\n<p>\n<b>  _SecNumb_._SubSecNumb_. _SecName_ </b>\n<p>\n"
-subsectionstar = "\n<p>\n<b> _SecName_ </b>\n<p>\n"
+section = "<h1 class='tex'>_SecNumb_. _SecName_ </h1>"
+sectionstar = "<h1 class='tex'>_SecName_</h1>"
+subsection = "<h2 class='tex'>_SecNumb_._SubSecNumb_. _SecName_</h2>"
+subsectionstar = "<h2 class='tex'>_SecName_</h2>"
 
 # Font styles. Feel free to add others. The key *must* contain
-# an open curly bracket. The value is the namem of a HTML tag.
+# an open curly bracket. The value is the name of a HTML tag.
 fontstyle = {
   r'{\em ' : 'em',
   r'{\bf ' : 'b',
@@ -93,16 +93,17 @@ fontstyle = {
 # Note that you have to write \\ instead of \
 # and \" instead of "
 
-M = [     ["\\to","\\rightarrow"] ,
-          ["\\B","\\{ 0,1 \\}" ],
-          ["\\E","\mathop{\\mathbb E}"],
-          ["\\P","\mathop{\\mathbb P}"],
-          ["\\N","{\\mathbb N}"],
-          ["\\Z","{\\mathbb Z}"],
-          ["\\C","{\\mathbb C}"],
-          ["\\R","{\\mathbb R}"],
-          ["\\Q","{\\mathbb Q}"],
-          ["\\xor","\\oplus"],
-          ["\\eps","\\epsilon"]
+M = [
+        #["\\to","\\rightarrow"] ,
+          #["\\B","\\{ 0,1 \\}" ],
+          #["\\E","\mathop{\\mathbb E}"],
+          #["\\P","\mathop{\\mathbb P}"],
+          #["\\N","{\\mathbb N}"],
+          #["\\Z","{\\mathbb Z}"],
+          #["\\C","{\\mathbb C}"],
+          #["\\R","{\\mathbb R}"],
+          #["\\Q","{\\mathbb Q}"],
+          #["\\xor","\\oplus"],
+          #["\\eps","\\epsilon"]
     ]
 

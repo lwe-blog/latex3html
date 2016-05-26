@@ -26,20 +26,19 @@
 
 import re
 from sys import argv
+import ipdb
 
-from latex2wpstyle import *
+from latex3htmlstyle import *
 
-# prepare variables computed from the info in latex2wpstyle
+# prepare variables computed from the info in latex3htmlstyle
 count = dict()
 for thm in ThmEnvs:
   count[T[thm]] = 0
 count["section"] = count["subsection"] = count["equation"] = 0
 
+numfootnotes = 0
+
 ref={}
-
-endlatex = "&fg="+textcolor
-if HTML : endproof = "<img src=\"http://l.wordpress.com/latex.php?latex=\Box&fg=000000\">"
-
 
 inthm = ""
 
@@ -93,13 +92,27 @@ Mnomath =[["\\\\","<br/>\n"],
 
 cb = re.compile("\\{|}")
 
+def extractmacros(m) :
+    macros = ""
+    rest = ""
+    for line in m.splitlines():
+        if line.startswith("\\newcommand") or \
+                line.startswith("\\renewcommand") or \
+                line.startswith("\\providecommand") or \
+                line.startswith("\\DeclareMathOperator*"):
+            macros += line + "\n"
+        else:
+            rest += line + "\n"
+
+    return macros, rest
+
 def extractbody(m) :
 
     begin = re.compile("\\\\begin\s*")
     m= begin.sub("\\\\begin",m)
     end = re.compile("\\\\end\s*")
     m = end.sub("\\\\end",m)
-    
+
     beginenddoc = re.compile("\\\\begin\\{document}"
                           "|\\\\end\\{document}")
     parse = beginenddoc.split(m)
@@ -117,9 +130,9 @@ def extractbody(m) :
         m = m.replace(e[0],e[1])
 
     comments = re.compile("%.*?\n")
-    m=comments.sub(" ",m)
+    m=comments.sub("",m)
 
-        
+
 
     multiplereturns = re.compile("\n\n+")
     m= multiplereturns.sub ("<p>",m)
@@ -189,7 +202,7 @@ def convertsqb(m) :
 
 
 def converttables(m) :
-        
+
 
     retable = re.compile("\\\\begin\s*\\{tabular}.*?\\\\end\s*\\{tabular}"
                          "|\\\\begin\s*\\{btabular}.*?\\\\end\s*\\{btabular}")
@@ -251,7 +264,7 @@ def convertonetable(m,border) :
     p=1
     i=0
 
-    
+
     while T[p-1] != "\\end{tabular}" and T[p-1] != "\\end{btabular}":
         m = m + "<td align="+align[format[i]]+">" + C[p] + "</td>"
         p=p+1
@@ -263,13 +276,13 @@ def convertonetable(m,border) :
             i=0
     m = m+ "</tr></table>"
     return (m)
- 
 
 
 
-            
-        
-    
+
+
+
+
 
 def separatemath(m) :
     mathre = re.compile("\\$.*?\\$"
@@ -290,8 +303,9 @@ def processmath( M ) :
                            "|\\\\end\\{equation}"
                            "|\\\\\\[|\\\\\\]")
     label = re.compile("\\\\label\\{.*?}")
-    
+
     for m in M :
+        print "m: ", m
         md = mathdelim.findall(m)
         mb = mathdelim.split(m)
 
@@ -300,16 +314,9 @@ def processmath( M ) :
           which is either \begin{equation}, or $, or \[, and
           mb[1] contains the actual mathematical equation
         """
-        
+
         if md[0] == "$" :
-            if HTML :
-                m=m.replace("$","")
-                m=m.replace("+","%2B") 
-                m=m.replace(" ","+")
-                m=m.replace("'","&#39;")
-                m="<img src=\"http://l.wordpress.com/latex.php?latex=%7B"+m+"%7D"+endlatex+"\">"
-            else :
-                m="$latex {"+mb[1]+"}"+endlatex+"$"
+            m="$"+mb[1]+"$"
 
         else :
             if md[0].find("\\begin") != -1 :
@@ -381,7 +388,7 @@ def convertbeginthm(thm) :
   t = beginthm.replace("_ThmType_",thm.capitalize())
   t = t.replace("_ThmNumb_",str(count[T[thm]]))
   return(t)
- 
+
 def convertendthm(thm) :
   global inthm
 
@@ -393,7 +400,7 @@ def convertlab(m) :
     global inthm
     global ref
 
-    
+
     m=cb.split(m)[1]
     m=m.replace(":","")
     if inthm != "" :
@@ -401,7 +408,7 @@ def convertlab(m) :
     else :
         ref[m]=count["section"]
     return("<a name=\""+m+"\"></a>")
-        
+
 
 
 def convertproof(m) :
@@ -409,11 +416,11 @@ def convertproof(m) :
         return(beginproof)
     else :
         return(endproof)
-    
+
 
 def convertsection (m) :
 
- 
+
       L=cb.split(m)
 
       """
@@ -435,18 +442,18 @@ def convertsection (m) :
 
 def convertsubsection (m) :
 
-      
+
         L=cb.split(m)
 
         if L[0].find("*") == -1 :
             t=subsection
         else :
             t=subsectionstar
-        
+
         count["subsection"] += 1
         t=t.replace("_SecNumb_",str(count["section"]) )
         t=t.replace("_SubSecNumb_",str(count["subsection"]) )
-        t=t.replace("_SecName_",L[1])     
+        t=t.replace("_SecName_",L[1])
         return(t)
 
 
@@ -485,19 +492,18 @@ def processtext ( t ) :
                    "|\\\\sout\\s*\\{.*?}")
 
 
- 
-        
+
         for s1, s2 in Mnomath :
             t=t.replace(s1,s2)
 
-        
+
         ttext = p.split(t)
         tcontrol = p.findall(t)
 
- 
+
         w = ttext[0]
 
- 
+
         i=0
         while i < len(tcontrol) :
             if tcontrol[i].find("{itemize}") != -1 :
@@ -548,6 +554,42 @@ def processtext ( t ) :
 
         return processfontstyle(w)
 
+def convertfootnote(fnote):
+    global numfootnotes
+    numfootnotes += 1
+    snote = "<span class='sidenote'><a name='footnote{0:d}'></a>{0:d}. {1} </span>".format(numfootnotes, fnote)
+    marker = "<sup><a href='#footnote{0:d}'>{0:d}</a></sup>".format(numfootnotes)
+    return marker + snote
+
+
+def processfootnotes(s):
+    TAG="\\footnote"
+
+    proc = ""
+    i = 0
+    while s[i:].find(TAG) != -1:
+        j = s[i:].find(TAG)
+        proc += s[i:i+j] # add the stuff before TAG to output
+        i += j + len(TAG) # skip the TAG itself
+
+        startIdx = i
+        bcount = 0
+        first = True
+        while bcount > 0 or first:
+            if s[i] == '{':
+                bcount += 1
+                first = False
+            elif s[i] == '}':
+                bcount -= 1
+            i += 1
+        fnote = s[startIdx:i] # contents of footnote, including {...}
+        fnote = fnote.strip()[1:-1] # just the contents
+
+        proc += convertfootnote(fnote)
+
+    proc += s[i:]
+    return proc
+
 def processfontstyle(w) :
 
         close = dict()
@@ -575,11 +617,32 @@ def processfontstyle(w) :
               ww += w[i]
             i += 1
         return ww
-    
+
+def convertref_text(m) : # only converts \ref, not \eqref
+    global ref
+
+    p=re.compile("\\\\ref\s*\\{.*?}")
+
+    T=p.split(m)
+    M=p.findall(m)
+
+    w = T[0]
+    for i in range(len(M)) :
+        t=M[i]
+        lab=cb.split(t)[1]
+        lab=lab.replace(":","")
+        if lab in ref:
+            w=w+"<a href=\"#"+lab+"\">"+str(ref[lab])+"</a>"
+        else:
+            # label may not exist if it's defined in a math mode block
+            # (then MathJax will take care of it)
+            w=w+t
+        w=w+T[i+1]
+    return w
 
 def convertref(m) :
     global ref
-    
+
     p=re.compile("\\\\ref\s*\\{.*?}|\\\\eqref\s*\\{.*?}")
 
     T=p.split(m)
@@ -612,7 +675,7 @@ convertmacros() procedure.
 
 Then the program separates the mathematical
 from the text parts. (It assumes that the document does
-not start with a mathematical expression.) 
+not start with a mathematical expression.)
 
 It makes one pass through the text part, translating
 environments such as theorem, lemma, proof, enumerate, itemize,
@@ -629,7 +692,7 @@ replace \ref commands by clickable html links.
 The next step is to make a pass through the mathematical environments.
 Displayed equations are numbered and centered, and when a \label{xx}
 command is encountered we give ref[xx] the number of the current
-equation. 
+equation.
 
 A final pass replaces \ref{xx} commands by the number in ref[xx],
 and a clickable link to the referenced location.
@@ -649,6 +712,9 @@ s=f.read()
 f.close()
 
 
+macros, rest = extractmacros(s) # pull out \newcommands, etc for processing by MathJax
+s = rest
+
 """
   extractbody() takes the text between a \begin{document}
   and \end{document}, if present, (otherwise it keeps the
@@ -664,6 +730,7 @@ s=convertsqb(s)
 
 
 #implement simple macros
+# currently the macro list is EMPTY, since math macros processed by MathJax
 s=convertmacros(s)
 
 
@@ -671,15 +738,16 @@ s=convertmacros(s)
 # processes math and text separately, then puts the processed
 # math equations in place of the placeholders
 
-(math,text) = separatemath(s) 
+(math,text) = separatemath(s)
 
 
 s=text[0]
 for i in range(len(math)) :
     s=s+"__math"+str(i)+"__"+text[i+1]
-    
+
 s = processtext ( s )
-math = processmath ( math )
+#math = processmath ( math ) #TODO: ??
+s=convertref_text(s) # process \refs within in the plaintext. (MathJax handles the refs to math)
 
 # converts escape sequences such as \$ to HTML codes
 # This must be done after formatting the tables or the '&' in
@@ -696,13 +764,25 @@ for e in esc :
 for i in range(len(math)) :
     s=s.replace("__math"+str(i)+"__",math[i])
 
-# translating the \ref{} commands
-s=convertref(s)
+s =  processfootnotes(s)
 
-
-
-if HTML :
-    s="<head><style>body{max-width:55em;}a:link{color:#4444aa;}a:visited{color:#4444aa;}a:hover{background-color:#aaaaFF;}</style></head><body>"+s+"</body></html>"
+s="""
+<head>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$']]},
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+  });
+</script>
+<script type="text/javascript" async
+    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>"""\
++"<div style='display:none'>$$ %s $$</div>" % macros\
++s\
++"</body></html>"
 
 s = s.replace("<p>","\n<p>\n")
 
