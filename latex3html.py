@@ -90,7 +90,10 @@ Mnomath =[["\\\\","<br/>\n"],
           ["\\`u","&ugrave;"],
           ["\\'u","&uacute;"],
           ["\\\"u","&uuml;"],
-          ["\\v{C}","&#268;"]]
+          ["\\v{C}","&#268;"],
+          ["``", "&ldquo;"],
+          ["''", "&rdquo;"],
+          ["~", " "]]
 
 
 cb = re.compile("\\{|}")
@@ -135,7 +138,8 @@ def extractbody(m) :
     comments = re.compile("%.*?\n")
     m=comments.sub("",m)
 
-
+    bibre = re.compile("\\\\bibliography.*?\n")
+    m = bibre.sub("", m)
 
     multiplereturns = re.compile("\n\n+")
     m= multiplereturns.sub ("<p>",m)
@@ -430,9 +434,19 @@ def convertstrike (m) :
     return("<s>"+L[1]+"</s>")
 
 def convertcite (m) :
-    L = cb.split (m)
-    refname = ref_names[L[1]]
-    return "[<a href='#%s'>%s</a>]" % ('ref-' + refname, refname)
+    reftext = ""
+    refid = ""
+    cite2 = re.match("\\\\cite\\[(.*?)\\]\\{(.*?)\\}", m)
+    if cite2:
+        sec = cite2.group(1) # eg, "Section 9"
+        refid = cite2.group(2) # \cite{refid}
+        refname = ref_names[refid]
+        return "[<a href='#%s'>%s</a>, %s]" % ('ref-' + refname, refname, sec)
+    else:
+        L=cb.split(m)
+        refname = ref_names[L[1]]
+        return "[<a href='#%s'>%s</a>]" % ('ref-' + refname, refname)
+
 
 def processtext ( t ) :
         p = re.compile("\\\\begin\\{\\w+}"
@@ -450,6 +464,7 @@ def processtext ( t ) :
                    "|\\\\hrefnosnap\\s*\\{.*?}\\s*\\{.*?}"
                    "|\\\\image\\s*\\{.*?}\\s*\\{.*?}\\s*\\{.*?}"
                    "|\\\\cite\\s*\\{.*?}"
+                   "|\\\\cite\\[.*?\\]\\{.*?}"
                    "|\\\\sout\\s*\\{.*?}")
 
 

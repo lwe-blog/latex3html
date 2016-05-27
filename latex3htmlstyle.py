@@ -94,6 +94,7 @@ fontstyle = {
 # and \" instead of "
 
 M = [
+        ["\\qed", "$$\\tag*{$\\blacksquare$}$$"]
         #["\\to","\\rightarrow"] ,
           #["\\B","\\{ 0,1 \\}" ],
           #["\\E","\mathop{\\mathbb E}"],
