@@ -2,6 +2,7 @@
 
 This is a modified version of Luca's
 [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/).
+Be warned; the modifications have not been made in a principled way...
 
 Main changes are:
 - Math rendered with MathJax
