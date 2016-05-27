@@ -43,6 +43,8 @@ ref={}
 
 ref_names = {} # map \cite{obfuscation} --> 'GGHRSW13'
 
+metadata = {} # for \author, \title, \data
+
 inthm = ""
 
 """
@@ -111,6 +113,19 @@ def extractmacros(m) :
             rest += line + "\n"
 
     return macros, rest
+
+def get_metadata(m):
+    global metadata
+    tnames = ['author', 'title', 'date']
+
+    for n in tnames:
+        ren = re.compile("\\\\" + n + "\\s*\\{(.*?)\\}")
+        mat = ren.search(m)
+        if mat:
+            metadata[n] = mat.group(1)
+        else:
+            metadata[n] = ""
+
 
 def extractbody(m) :
 
@@ -447,6 +462,12 @@ def convertcite (m) :
         refname = ref_names[L[1]]
         return "[<a href='#%s'>%s</a>]" % ('ref-' + refname, refname)
 
+def maketitle():
+    return """<div class='titleblock'><h1>%s</h1>
+    %s
+    <br>%s
+    </div>""" % (metadata['title'], metadata['author'], metadata['date'])
+
 
 def processtext ( t ) :
         p = re.compile("\\\\begin\\{\\w+}"
@@ -457,6 +478,7 @@ def processtext ( t ) :
                    "|\\\\label\\s*\\{.*?}"
                    "|\\\\section\\s*\\{.*?}"
                    "|\\\\section\\*\\s*\\{.*?}"
+                   "|\\\\maketitle"
                    "|\\\\subsection\\s*\\{.*?}"
                    "|\\\\subsection\\*\\s*\\{.*?}"
                    "|\\\\href\\s*\\{.*?}\\s*\\{.*?}"
@@ -512,6 +534,8 @@ def processtext ( t ) :
                 w = w+convertstrike(tcontrol[i])
             elif tcontrol[i].find("\\cite") != -1 :
                 w=w+convertcite(tcontrol[i])
+            elif tcontrol[i].find("\\maketitle") != -1 :
+                w = w+maketitle()
             elif tcontrol[i].find("\\begin") !=-1 and tcontrol[i].find("{center}")!= -1 :
                 w = w+"<p align=center>"
             elif tcontrol[i].find("\\end")!= -1  and tcontrol[i].find("{center}") != -1 :
@@ -733,6 +757,8 @@ if args.bbl:
 macros, rest = extractmacros(s) # pull out \newcommands, etc for processing by MathJax
 s = rest
 
+get_metadata(s) # author, title, date
+
 """
   extractbody() takes the text between a \begin{document}
   and \end{document}, if present, (otherwise it keeps the
@@ -750,8 +776,8 @@ s=converttables(s)
 s=convertsqb(s)
 
 
-#implement simple macros
-# currently the macro list is EMPTY, since math macros processed by MathJax
+# implement simple macros
+# currently the macro list is ALMOST EMPTY, since math macros processed by MathJax
 s=convertmacros(s)
 
 

@@ -29,3 +29,7 @@ a:hover {background-color:#aaaaFF;}
 .sidenote:hover {
     opacity: 1.0;
 }
+
+.titleblock {
+    text-align: center;
+}
