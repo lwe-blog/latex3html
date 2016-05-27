@@ -26,6 +26,7 @@
 
 import re
 from sys import argv
+import argparse
 import ipdb
 
 from latex3htmlstyle import *
@@ -39,6 +40,8 @@ count["section"] = count["subsection"] = count["equation"] = 0
 numfootnotes = 0
 
 ref={}
+
+ref_names = {} # map \cite{obfuscation} --> 'GGHRSW13'
 
 inthm = ""
 
@@ -122,7 +125,7 @@ def extractbody(m) :
        m = parse[1]
 
     """
-      removes comments, replaces double returns with <p> and
+      removes comments, \bibliography, replaces double returns with <p> and
       other returns and multiple spaces by a single space.
     """
 
@@ -294,60 +297,7 @@ def separatemath(m) :
 
 
 def processmath( M ) :
-    R = []
-    counteq=0
-    global ref
-
-    mathdelim = re.compile("\\$"
-                           "|\\\\begin\\{equation}"
-                           "|\\\\end\\{equation}"
-                           "|\\\\\\[|\\\\\\]")
-    label = re.compile("\\\\label\\{.*?}")
-
-    for m in M :
-        print "m: ", m
-        md = mathdelim.findall(m)
-        mb = mathdelim.split(m)
-
-        """
-          In what follows, md[0] contains the initial delimiter,
-          which is either \begin{equation}, or $, or \[, and
-          mb[1] contains the actual mathematical equation
-        """
-
-        if md[0] == "$" :
-            m="$"+mb[1]+"$"
-
-        else :
-            if md[0].find("\\begin") != -1 :
-                count["equation"] += 1
-                mb[1] = mb[1] + "\\ \\ \\ \\ \\ ("+str(count["equation"])+")"
-            if HTML :
-                mb[1]=mb[1].replace("+","%2B")
-                mb[1]=mb[1].replace("&","%26")
-                mb[1]=mb[1].replace(" ","+")
-                mb[1]=mb[1].replace("'","&#39;")
-                m = "<p align=center><img src=\"http://l.wordpress.com/latex.php?latex=\displaystyle " + mb[1] +endlatex+"\"></p>\n"
-            else :
-                m = "<p align=center>$latex \displaystyle " + mb[1] +endlatex+"$</p>\n"
-            if m.find("\\label") != -1 :
-                mnolab = label.split(m)
-                mlab = label.findall(m)
-                """
-                 Now the mathematical equation, which has already
-                 been formatted for WordPress, is the union of
-                 the strings mnolab[0] and mnolab[1]. The content
-                 of the \label{...} command is in mlab[0]
-                """
-                lab = mlab[0]
-                lab=cb.split(lab)[1]
-                lab=lab.replace(":","")
-                ref[lab]=count["equation"]
-
-                m="<a name=\""+lab+"\">"+mnolab[0]+mnolab[1]+"</a>"
-
-        R= R + [m]
-    return R
+    pass
 
 
 def convertcolors(m,c) :
@@ -457,9 +407,13 @@ def convertsubsection (m) :
         return(t)
 
 
-def converturl (m) :
+def converthref (m) :
     L = cb.split(m)
     return ("<a href=\""+L[1]+"\">"+L[3]+"</a>")
+
+def converturl (m) :
+    L = cb.split(m)
+    return ("<a href=\""+L[1]+"\">"+L[1]+"</a>")
 
 def converturlnosnap (m) :
     L = cb.split(m)
@@ -475,6 +429,11 @@ def convertstrike (m) :
     L=cb.split(m)
     return("<s>"+L[1]+"</s>")
 
+def convertcite (m) :
+    L = cb.split (m)
+    refname = ref_names[L[1]]
+    return "[<a href='#%s'>%s</a>]" % ('ref-' + refname, refname)
+
 def processtext ( t ) :
         p = re.compile("\\\\begin\\{\\w+}"
                    "|\\\\nbegin\\{\\w+}\\s*\\{.*?}"
@@ -487,8 +446,10 @@ def processtext ( t ) :
                    "|\\\\subsection\\s*\\{.*?}"
                    "|\\\\subsection\\*\\s*\\{.*?}"
                    "|\\\\href\\s*\\{.*?}\\s*\\{.*?}"
+                   "|\\\\url\\s*\\{.*?}"
                    "|\\\\hrefnosnap\\s*\\{.*?}\\s*\\{.*?}"
                    "|\\\\image\\s*\\{.*?}\\s*\\{.*?}\\s*\\{.*?}"
+                   "|\\\\cite\\s*\\{.*?}"
                    "|\\\\sout\\s*\\{.*?}")
 
 
@@ -519,6 +480,8 @@ def processtext ( t ) :
             elif tcontrol[i].find("\\hrefnosnap") != -1 :
                 w = w+converturlnosnap(tcontrol[i])
             elif tcontrol[i].find("\\href") != -1 :
+                w = w+converthref(tcontrol[i])
+            elif tcontrol[i].find("\\url") != -1 :
                 w = w+converturl(tcontrol[i])
             elif tcontrol[i].find("{proof}") != -1 :
                 w = w+convertproof(tcontrol[i])
@@ -532,6 +495,8 @@ def processtext ( t ) :
                 w = w+convertimage(tcontrol[i])
             elif tcontrol[i].find("\\sout") != -1 :
                 w = w+convertstrike(tcontrol[i])
+            elif tcontrol[i].find("\\cite") != -1 :
+                w=w+convertcite(tcontrol[i])
             elif tcontrol[i].find("\\begin") !=-1 and tcontrol[i].find("{center}")!= -1 :
                 w = w+"<p align=center>"
             elif tcontrol[i].find("\\end")!= -1  and tcontrol[i].find("{center}") != -1 :
@@ -660,6 +625,33 @@ def convertref(m) :
         w=w+T[i+1]
     return w
 
+
+def proc_bbl(s):
+    global ref_names
+
+    bibtex = "<h3>References</h3>"
+
+    s = re.sub(r'\\begin\{thebibliography\}.*\n', "", s)
+    s = re.sub(r'\\end\{thebibliography\}.*\n', "", s)
+    s = s.replace('\\newblock', '')
+    s= s.strip()
+
+    bibitem_group = re.compile(r'\\bibitem\[(.+?)\]\{(.+?)\}')
+    bibitem = re.compile(r'\\bibitem\[.+?\]\{.+?\}')
+    bitems = bibitem_group.findall(s)
+    btext = bibitem.split(s)[1:]
+    for bib, txt in zip(bitems, btext):
+        refname  = bib[0] # like 'KMN11' if using alpha style of bib
+        refid = bib[1] # \cite{refid}
+        ref_names[refid] = refname
+        txt = txt.strip()
+
+        bibtex += "<p><a name='%s'>[%s]</a>&emsp;" % ('ref-' + refname, refname)
+        bibtex += txt + "<p>"
+
+    return bibtex
+
+
 """
 The program makes several passes through the input.
 
@@ -699,18 +691,29 @@ and a clickable link to the referenced location.
 """
 
 
-inputfile = "wpress.tex"
-outputfile = "wpress.html"
-if len(argv) > 1 :
-    inputfile = argv[1]
-    if len(argv) > 2 :
-        outputfile = argv[2]
-    else :
-        outputfile = inputfile.replace(".tex",".html")
+aparse = argparse.ArgumentParser(description="turn LaTeX to HTML+MathJax")
+aparse.add_argument('inputfile', help='LaTeX source')
+aparse.add_argument('--bbl', help='BibTeX-compiled .bbl file')
+aparse.add_argument('--outfile', help='custom output filename')
+args = aparse.parse_args()
+
+inputfile = args.inputfile
+outputfile = args.outfile
+if not outputfile:
+    outputfile = inputfile.replace(".tex",".html")
 f=open(inputfile)
 s=f.read()
 f.close()
 
+if args.bbl:
+    with open(args.bbl) as bibf:
+        bib = proc_bbl(bibf.read()) # returns a weird mix of html and latex,
+        # that gets appended to the document at an apropriate stage in the
+        # conversion. (eg, far enough in that the weird mix works).
+        # Why not just pure LaTeX or pure HTML output? BibTex-compiled .bbl
+        # files have some LaTeX formatting, but we also want our bib to have
+        # nice html formatting, and finally, we are lazy and do not want to
+        # re-structure this program to do multiple passes.
 
 macros, rest = extractmacros(s) # pull out \newcommands, etc for processing by MathJax
 s = rest
@@ -721,6 +724,9 @@ s = rest
   whole document), normalizes the spacing, and removes comments
 """
 s=extractbody(s)
+
+
+s += bib # append the bib (weird mix of html and Latex)
 
 # formats tables
 s=converttables(s)
