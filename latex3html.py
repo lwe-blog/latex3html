@@ -31,6 +31,8 @@ import ipdb
 
 from latex3htmlstyle import *
 
+bodyonly = False
+
 # prepare variables computed from the info in latex3htmlstyle
 count = dict()
 for thm in ThmEnvs:
@@ -455,18 +457,27 @@ def convertcite (m) :
     if cite2:
         sec = cite2.group(1) # eg, "Section 9"
         refid = cite2.group(2) # \cite{refid}
-        refname = ref_names[refid]
-        return "[<a href='#%s'>%s</a>, %s]" % ('ref-' + refname, refname, sec)
+        if refid in ref_names:
+            refname = ref_names[refid]
+            return "[<a href='#%s'>%s</a>, %s]" % ('ref-' + refname, refname, sec)
     else:
         L=cb.split(m)
-        refname = ref_names[L[1]]
-        return "[<a href='#%s'>%s</a>]" % ('ref-' + refname, refname)
+        if L[1] in ref_names:
+            refname = ref_names[L[1]]
+            return "[<a href='#%s'>%s</a>]" % ('ref-' + refname, refname)
+
+    print "Warning: \cite to unknown reference."
+    return m
 
 def maketitle():
-    return """<div class='titleblock'><h1>%s</h1>
-    %s
-    <br>%s
-    </div>""" % (metadata['title'], metadata['author'], metadata['date'])
+    global bodyonly
+    if bodyonly:
+        return ""
+    else:
+        return """<div class='titleblock'><h1>%s</h1>
+        %s
+        <br>%s
+        </div>""" % (metadata['title'], metadata['author'], metadata['date'])
 
 
 def processtext ( t ) :
@@ -668,7 +679,7 @@ def convertref(m) :
 def proc_bbl(s):
     global ref_names
 
-    bibtex = "<h3>References</h3>"
+    bibtex = "<br><hr><h3>References</h3>"
 
     s = re.sub(r'\\begin\{thebibliography\}.*\n', "", s)
     s = re.sub(r'\\end\{thebibliography\}.*\n', "", s)
@@ -734,7 +745,9 @@ aparse = argparse.ArgumentParser(description="turn LaTeX to HTML+MathJax")
 aparse.add_argument('inputfile', help='LaTeX source')
 aparse.add_argument('--bbl', help='BibTeX-compiled .bbl file')
 aparse.add_argument('--outfile', help='custom output filename')
+aparse.add_argument('--bodyonly', action='store_true', help='output only the HTML body, and no titleblock (useful for embedding in a blog)')
 args = aparse.parse_args()
+bodyonly = args.bodyonly
 
 inputfile = args.inputfile
 outputfile = args.outfile
@@ -766,8 +779,8 @@ get_metadata(s) # author, title, date
 """
 s=extractbody(s)
 
-
-s += bib # append the bib (weird mix of html and Latex)
+if args.bbl:
+    s += bib # append the bib (weird mix of html and Latex)
 
 # formats tables
 s=converttables(s)
@@ -813,7 +826,14 @@ for i in range(len(math)) :
 
 s =  processfootnotes(s)
 
-s="""
+
+# Done processing, 's' contains the html. Now just add <head>, etc.
+
+
+html_output = ""
+
+if not args.bodyonly:
+    html_output += """
 <head>
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
@@ -824,16 +844,58 @@ MathJax.Hub.Config({
 <script type="text/javascript" async
     src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
-<link rel="stylesheet" type="text/css" href="style.css">
+<style>
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    max-width:55em;
+}
+a:link { color:#4444aa; }
+a:visited {color:#4444aa;}
+a:hover {background-color:#aaaaFF;}
+</style>
 </head>
-<body>"""\
+"""
+
+html_output += """
+<body>
+<style>
+.sidenote {
+    right:0;
+    top: auto;
+
+    display: block;
+    float: right;
+    width: 200px;
+    margin: 2px;
+    margin-right: -300px;
+    padding: 3px;
+
+    font-size: 1em;
+    opacity: 0.5;
+    padding-left: 15px;
+    border-left: 3px solid #ccc;
+
+}
+
+.sidenote:hover {
+    opacity: 1.0;
+}
+
+.titleblock {
+    text-align: center;
+}
+</style>
+"""\
 +"<div style='display:none'>$$ %s $$</div>" % macros\
 +s\
-+"</body></html>"
++"</body>"
 
-s = s.replace("<p>","\n<p>\n")
+if not args.bodyonly:
+    html_output +="</html>"
+
+html_output= html_output.replace("<p>","\n<p>\n")
 
 
 f=open(outputfile,"w")
-f.write(s)
+f.write(html_output)
 f.close()
