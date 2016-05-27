@@ -834,6 +834,7 @@ html_output = ""
 
 if not args.bodyonly:
     html_output += """
+<html>
 <head>
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
