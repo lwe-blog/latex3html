@@ -572,8 +572,10 @@ def processtext ( t ) :
 def convertfootnote(fnote):
     global numfootnotes
     numfootnotes += 1
-    snote = "<span class='sidenote'><a name='footnote{0:d}'></a>{0:d}. {1} </span>".format(numfootnotes, fnote)
-    marker = "<sup><a href='#footnote{0:d}'>{0:d}</a></sup>".format(numfootnotes)
+    fnum = numfootnotes
+    fname = 'footnote%d' % fnum
+    snote = "<span class='sidenote' id='{0}'><a name='{0}'>{1}.</a> {2} </span>".format(fname, fnum, fnote)
+    marker = "<sup><a href='#{0}' onclick=\"toggle_display_nojump('{0}');\">{1}</a></sup>".format(fname, fnum)
     return marker + snote
 
 
@@ -861,14 +863,11 @@ html_output += """
 <body>
 <style>
 .sidenote {
-    right:0;
     top: auto;
+    float: left;
 
-    display: block;
-    float: right;
-    width: 200px;
-    margin: 2px;
-    margin-right: -300px;
+    display: none;
+    margin: 10px;
     padding: 3px;
 
     font-size: 1em;
@@ -886,6 +885,18 @@ html_output += """
     text-align: center;
 }
 </style>
+<script type="text/javascript">
+    function toggle_display_nojump(id) {
+       event.preventDefault();
+       var e = document.getElementById(id);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+
+      return false; // prevent default action of jumping to anchor
+    }
+</script>
 """\
 +"<div style='display:none'>$$ %s $$</div>" % macros\
 +s\
