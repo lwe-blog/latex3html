@@ -574,7 +574,7 @@ def convertfootnote(fnote):
     numfootnotes += 1
     fnum = numfootnotes
     fname = 'footnote%d' % fnum
-    snote = "<span class='sidenote' id='{0}'><a name='{0}'>{1}.</a> {2} </span>".format(fname, fnum, fnote)
+    snote = "<span class='sidenote' id='{0}'><a name='{0}' href='#{0}'>{1}.</a> {2} </span>".format(fname, fnum, fnote)
     marker = "<sup><a href='#{0}' onclick=\"toggle_display_nojump('{0}');\">{1}</a></sup>".format(fname, fnum)
     return marker + snote
 
