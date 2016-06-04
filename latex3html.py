@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
  Copyright 2009 Luca Trevisan
 
@@ -27,7 +28,7 @@
 import re
 from sys import argv
 import argparse
-import ipdb
+#import ipdb
 
 from latex3htmlstyle import *
 
@@ -61,7 +62,8 @@ esc = [["\\$","_dollar_","&#36;","\\$"],
        ["\\%","_percent_","&#37;","\\%"],
        ["\\&","_amp_","&amp;","\\&"],
        [">","_greater_",">","&gt;"],
-       ["<","_lesser_","<","&lt;"]]
+       ["<","_lesser_","<","&lt;"],
+       ["~", "_tilde_", " ", "~"]]
 
 M = M + [ ["\\more","<!--more-->"],
           ["\\newblock","\\\\"],
@@ -96,8 +98,7 @@ Mnomath =[["\\\\","<br/>\n"],
           ["\\\"u","&uuml;"],
           ["\\v{C}","&#268;"],
           ["``", "&ldquo;"],
-          ["''", "&rdquo;"],
-          ["~", " "]]
+          ["''", "&rdquo;"]]
 
 
 cb = re.compile("\\{|}")
@@ -309,9 +310,15 @@ def convertonetable(m,border) :
 
 
 def separatemath(m) :
-    mathre = re.compile("\\$.*?\\$"
-                   "|\\\\begin\\{equation}.*?\\\\end\\{equation}"
-                   "|\\\\\\[.*?\\\\\\]")
+    mathre_str = "\\$.*?\\$"\
+                 +"|\\\\begin\\{equation}.*?\\\\end\\{equation}"\
+                 +"|\\\\\\[.*?\\\\\\]"
+
+    for menv in mathenvs:
+        n = re.escape(menv)
+        mathre_str += "|\\\\begin\\{"+n+"}.*?\\\\end\\{"+n+"}"
+
+    mathre = re.compile(mathre_str)
     math = mathre.findall(m)
     text = mathre.split(m)
     return(math,text)
@@ -552,18 +559,19 @@ def processtext ( t ) :
             elif tcontrol[i].find("\\end")!= -1  and tcontrol[i].find("{center}") != -1 :
                 w = w+"</p>"
             else :
-              for clr in colorchoice :
-                if tcontrol[i].find("{"+clr+"}") != -1:
-                    w=w + convertcolors(tcontrol[i],clr)
-              for thm in ThmEnvs :
-                if tcontrol[i]=="\\end{"+thm+"}" :
-                    w=w+convertendthm(thm)
-                elif tcontrol[i]=="\\begin{"+thm+"}":
-                    w=w+convertbeginthm(thm)
-                elif tcontrol[i].find("\\nbegin{"+thm+"}") != -1:
-                    L=cb.split(tcontrol[i])
-                    thname=L[3]
-                    w=w+convertbeginnamedthm(thname,thm)
+                for clr in colorchoice :
+                  if tcontrol[i].find("{"+clr+"}") != -1:
+                      w=w + convertcolors(tcontrol[i],clr)
+                for thm in ThmEnvs :
+                  if tcontrol[i]=="\\end{"+thm+"}" :
+                      w=w+convertendthm(thm)
+                  elif tcontrol[i]=="\\begin{"+thm+"}":
+                      w=w+convertbeginthm(thm)
+                  elif tcontrol[i].find("\\nbegin{"+thm+"}") != -1:
+                      L=cb.split(tcontrol[i])
+                      thname=L[3]
+                      w=w+convertbeginnamedthm(thname,thm)
+
             w += ttext[i+1]
             i += 1
 
@@ -754,7 +762,10 @@ bodyonly = args.bodyonly
 inputfile = args.inputfile
 outputfile = args.outfile
 if not outputfile:
-    outputfile = inputfile.replace(".tex",".html")
+    if bodyonly:
+        outputfile = inputfile.replace(".tex","-body.html")
+    else:
+        outputfile = inputfile.replace(".tex",".html")
 f=open(inputfile)
 s=f.read()
 f.close()
@@ -857,10 +868,10 @@ a:visited {color:#4444aa;}
 a:hover {background-color:#aaaaFF;}
 </style>
 </head>
+<body>
 """
 
 html_output += """
-<body>
 <style>
 .sidenote {
     top: auto;
@@ -898,12 +909,11 @@ html_output += """
     }
 </script>
 """\
-+"<div style='display:none'>$$ %s $$</div>" % macros\
-+s\
-+"</body>"
++"<div style='display:none;'><script type='math/tex'> %s </script></div>" % macros\
++s
 
 if not args.bodyonly:
-    html_output +="</html>"
+    html_output +="</body></html>"
 
 html_output= html_output.replace("<p>","\n<p>\n")
 

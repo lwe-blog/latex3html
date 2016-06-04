@@ -1,27 +1,4 @@
 
-<html>
-<head>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  tex2jax: {inlineMath: [['$','$']]},
-  TeX: { equationNumbers: { autoNumber: "AMS" } }
-  });
-</script>
-<script type="text/javascript" async
-    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
-<style>
-body {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    max-width:55em;
-}
-a:link { color:#4444aa; }
-a:visited {color:#4444aa;}
-a:hover {background-color:#aaaaFF;}
-</style>
-</head>
-<body>
-
 <style>
 .sidenote {
     top: auto;
@@ -73,10 +50,7 @@ a:hover {background-color:#aaaaFF;}
 \newcommand{\bmqty}[1]{\begin{bmatrix}#1\end{bmatrix}}
 \newcommand{\innp}[1]{\langle #1 \rangle}
 \renewcommand{\t}{\widetilde}
- </script></div> <div class='titleblock'><h1>Fast Johnson-Lindenstrauss</h1>
-        Preetum Nakkiran
-        <br>May 19, 2016
-        </div>
+ </script></div> 
 <p>
 The Johnson-Lindenstrauss (JL) Transform says that, informally, we can embed high-dimensional points into a much lower dimension, while still preserving their pairwise distances. In this post we'll start with the classical JL transform, then focus on the Fast JL Transform (FJLT) by Ailon and Chazelle [<a href='#ref-AC09'>AC09</a>], which achieves the JL embedding more efficiently (w.r.t. runtime and randomness). We'll look at the FJLT from the perspective of &ldquo;preconditioning&rdquo; a sparse estimator, which comes with nice intuition from Fourier duality. We conclude by mentioning more recent developments in this area (faster/sparser/derandomizeder).
 <p>
@@ -226,4 +200,3 @@ That is, we first precondition with the randomized Hadamard transform, then samp
  Technical report, Technical report, MIT-CSAIL, 2010.
  URL: <a href="http://web.mit.edu/minilek/www/jl_notes.pdf">http://web.mit.edu/minilek/www/jl_notes.pdf</a>.
 <p>
-</body></html>

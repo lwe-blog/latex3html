@@ -66,10 +66,10 @@ endthm = "</em></blockquote>\n<p>\n"
 beginproof = "<em>Proof:</em> "
 endproof = "$$\\tag*{$\\blacksquare$}$$"
 
-section = "<h1 class='tex'>_SecNumb_. _SecName_ </h1>"
-sectionstar = "<h1 class='tex'>_SecName_</h1>"
-subsection = "<h2 class='tex'>_SecNumb_._SubSecNumb_. _SecName_</h2>"
-subsectionstar = "<h2 class='tex'>_SecName_</h2>"
+section = "<h2 class='tex'>_SecNumb_. _SecName_ </h2>"
+sectionstar = "<h2 class='tex'>_SecName_</h2>"
+subsection = "<h3 class='tex'>_SecNumb_._SubSecNumb_. _SecName_</h3>"
+subsectionstar = "<h3 class='tex'>_SecName_</h3>"
 
 # Font styles. Feel free to add others. The key *must* contain
 # an open curly bracket. The value is the name of a HTML tag.
@@ -107,4 +107,36 @@ M = [
           #["\\xor","\\oplus"],
           #["\\eps","\\epsilon"]
     ]
+
+
+# The environments that MathJax can deal with:
+# http://docs.mathjax.org/en/latest/tex.html#environments
+mathenvs = [
+"align",
+"align*",
+"alignat",
+"alignat*",
+"aligned",
+"alignedat",
+"array",
+"Bmatrix",
+"bmatrix",
+"cases",
+"CD",
+"eqnarray",
+"eqnarray*",
+"equation",
+"equation*",
+"gather",
+"gather*",
+"gathered",
+"matrix",
+"multline",
+"multline*",
+"pmatrix",
+"smallmatrix",
+"split",
+"subarray",
+"Vmatrix",
+"vmatrix"]
 

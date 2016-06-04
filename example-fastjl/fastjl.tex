@@ -54,18 +54,18 @@
 The Johnson-Lindenstrauss (JL) Transform says that, informally,
 we can embed high-dimensional points into a much lower dimension, while still
 preserving their pairwise distances.
-In this post we will start with the classical JL transform,
+In this post we'll start with the classical JL transform,
 then focus on the Fast JL Transform (FJLT) by Ailon and Chazelle \cite{fjlt},
 which achieves the JL embedding more
 efficiently (w.r.t. runtime and randomness).
-We will develop the FJLT from the perspective of ``preconditioning'' a sparse
+We'll look at the FJLT from the perspective of ``preconditioning'' a sparse
 estimator, which comes with nice intuition from Fourier duality.
 We conclude by mentioning more recent developments in this area
 (faster/sparser/derandomizeder).
 %\end{abstract}
 
 {\bf Motivation.}
-Aside from being an interesting structural result, the JL transform also has
+It's an interesting structural result, and the JL transform also has
 algorithmic and machine-learning applications. Eg, any application that only
 depends on approximate pairwise distances (such as nearest-neighbors), or even on pairwise
 inner-products\footnote{Because, if the norms $||x_i-x_j||$, $||x_i||$, and $||x_j||$ are

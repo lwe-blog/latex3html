@@ -1,0 +1,56 @@
+\documentclass[]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fullpage}
+
+\usepackage{graphicx}
+\usepackage{amssymb,amsmath}
+\usepackage{amsthm}
+\usepackage{hyperref}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+% formatting
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+
+% compact main title.
+\usepackage{titling}
+\setlength{\droptitle}{-7em}
+\posttitle{\par\end{center}\vspace{-2em}}
+\postauthor{\end{tabular}\par\end{center}\vspace{-2.5em}}
+\postdate{\par\end{center}}
+
+% math macros
+\newcommand{\1}{\mathbb{1}}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\newcommand{\x}{\times}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+%\newcommand{\N}{\mathbb{N}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\E}{\mathop{\mathbb{E}}}
+\renewcommand{\bar}{\overline}
+\renewcommand{\epsilon}{\varepsilon}
+
+\newcommand{\bmqty}[1]{\begin{bmatrix}#1\end{bmatrix}}
+\newcommand{\innp}[1]{\langle #1 \rangle}
+% you can define arbitrary math-mode macros here (or anywhere).
+
+\title{}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\bibliography{bib}{}
+\bibliographystyle{alphaurl}
+
+\end{document}
