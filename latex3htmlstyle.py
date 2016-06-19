@@ -64,7 +64,9 @@ endthm = "</em></blockquote>\n<p>\n"
 
 
 beginproof = "<em>Proof:</em> "
+beginnamedproof = "<em>_PfName_:</em> "
 endproof = "$$\\tag*{$\\blacksquare$}$$"
+
 
 section = "<h2 class='tex'>_SecNumb_. _SecName_ </h2>"
 sectionstar = "<h2 class='tex'>_SecName_</h2>"

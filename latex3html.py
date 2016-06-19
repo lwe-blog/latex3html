@@ -207,8 +207,8 @@ def convertsqb(m) :
     for i in range(0,len(Litems)) :
       s= Litems[i]
       s=s.replace("\\item","\\nitem")
-      s=s.replace("[","{")
-      s=s.replace("]","}")
+      #s=s.replace("[","{")
+      #s=s.replace("]","}")
       m=m+s+Lrest[i+1]
 
     r = re.compile("\\\\begin\\s*\\{\\w+}\\s*\\[.*?\\]")
@@ -219,8 +219,8 @@ def convertsqb(m) :
     for i in range(0,len(Lthms)) :
       s= Lthms[i]
       s=s.replace("\\begin","\\nbegin")
-      s=s.replace("[","{")
-      s=s.replace("]","}")
+      #s=s.replace("[","{")
+      #s=s.replace("]","}")
       m=m+s+Lrest[i+1]
 
     return m
@@ -395,6 +395,8 @@ def convertproof(m) :
     else :
         return(endproof)
 
+def convertbeginnamedproof(pfname):
+  return beginnamedproof.replace("_PfName_",pfname)
 
 def convertsection (m) :
 
@@ -489,10 +491,10 @@ def maketitle():
 
 def processtext ( t ) :
         p = re.compile("\\\\begin\\{\\w+}"
-                   "|\\\\nbegin\\{\\w+}\\s*\\{.*?}"
+                   "|\\\\nbegin\\{\\w+}\\s*\\[.*?\\]"
                    "|\\\\end\\{\\w+}"
                    "|\\\\item"
-                   "|\\\\nitem\\s*\\{.*?}"
+                   "|\\\\nitem\\s*\\[.*?\\]"
                    "|\\\\label\\s*\\{.*?}"
                    "|\\\\section\\s*\\{.*?}"
                    "|\\\\section\\*\\s*\\{.*?}"
@@ -529,8 +531,8 @@ def processtext ( t ) :
             elif tcontrol[i][0:5]=="\\item" :
                 w=w+"<li>"
             elif tcontrol[i][0:6]=="\\nitem" :
-                    lb = tcontrol[i][7:].replace("{","")
-                    lb = lb.replace("}","")
+                    lb = tcontrol[i][7:].replace("[","")
+                    lb = lb.replace("]","")
                     w=w+"<li>"+lb
             elif tcontrol[i].find("\\hrefnosnap") != -1 :
                 w = w+converturlnosnap(tcontrol[i])
@@ -538,6 +540,10 @@ def processtext ( t ) :
                 w = w+converthref(tcontrol[i])
             elif tcontrol[i].find("\\url") != -1 :
                 w = w+converturl(tcontrol[i])
+            elif tcontrol[i].find("\\nbegin{proof}") != -1:
+                pfname = re.search("\\\\nbegin\\{proof}\\s*\\[(.*)\\]",
+                        tcontrol[i]).group(1)
+                w=w+convertbeginnamedproof(pfname)
             elif tcontrol[i].find("{proof}") != -1 :
                 w = w+convertproof(tcontrol[i])
             elif tcontrol[i].find("\\subsection") != -1 :
@@ -568,8 +574,10 @@ def processtext ( t ) :
                   elif tcontrol[i]=="\\begin{"+thm+"}":
                       w=w+convertbeginthm(thm)
                   elif tcontrol[i].find("\\nbegin{"+thm+"}") != -1:
-                      L=cb.split(tcontrol[i])
-                      thname=L[3]
+                      thname = re.search("\\\\nbegin\\{\\w+}\\s*\\[(.*?)\\]",
+                              tcontrol[i]).group(1)
+                      #L=cb.split(tcontrol[i])
+                      #thname=L[3]
                       w=w+convertbeginnamedthm(thname,thm)
 
             w += ttext[i+1]
