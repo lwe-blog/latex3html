@@ -398,6 +398,10 @@ def convertproof(m) :
 def convertbeginnamedproof(pfname):
   return beginnamedproof.replace("_PfName_",pfname)
 
+def convertparagraph (m) :
+      L=cb.split(m)
+      return "<p><b>" + L[1] + "</b>"
+
 def convertsection (m) :
 
 
@@ -497,6 +501,7 @@ def processtext ( t ) :
                    "|\\\\nitem\\s*\\[.*?\\]"
                    "|\\\\label\\s*\\{.*?}"
                    "|\\\\section\\s*\\{.*?}"
+                   "|\\\\paragraph\\s*\\{.*?}"
                    "|\\\\section\\*\\s*\\{.*?}"
                    "|\\\\maketitle"
                    "|\\\\subsection\\s*\\{.*?}"
@@ -550,6 +555,8 @@ def processtext ( t ) :
                 w = w+convertsubsection(tcontrol[i])
             elif tcontrol[i].find("\\section") != -1 :
                 w = w+convertsection(tcontrol[i])
+            elif tcontrol[i].find("\\paragraph") != -1 :
+                w = w+convertparagraph(tcontrol[i])
             elif tcontrol[i].find("\\label") != -1 :
                 w=w+convertlab(tcontrol[i])
             elif tcontrol[i].find("\\image") != -1 :

@@ -9,13 +9,19 @@
 \usepackage{hyperref}
 
 \renewcommand\qedsymbol{$\blacksquare$}
+\newtheorem{exercise}{Exercise}
 \newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{example}{Example}
+\newtheorem{remark}[theorem]{Remark}
 
 % formatting
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setlength{\emergencystretch}{3em}
 \IfFileExists{microtype.sty}{\usepackage{microtype}}{}
 
 % compact main title.
@@ -41,6 +47,14 @@
 
 \newcommand{\bmqty}[1]{\begin{bmatrix}#1\end{bmatrix}}
 \newcommand{\innp}[1]{\langle #1 \rangle}
+\DeclareMathOperator{\rank}{rank}
+\newcommand{\note}[1]{&&\text{(#1)}} % use this to annotate eqns in align environments.
+
+% special command for including images.
+% \image{width = 100}{web file}{local file}
+% or \image{height = 100}{...}
+\def\image#1#2#3{\begin{center}\includegraphics[#1pt]{#3}\end{center}}
+
 % you can define arbitrary math-mode macros here (or anywhere).
 
 \title{}
