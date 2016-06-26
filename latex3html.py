@@ -567,6 +567,10 @@ def processtext ( t ) :
                 w=w+convertcite(tcontrol[i])
             elif tcontrol[i].find("\\maketitle") != -1 :
                 w = w+maketitle()
+            elif tcontrol[i].find("\\begin") !=-1 and tcontrol[i].find("{mdframed}")!= -1 :
+                w = w+"<div class='framed'>"
+            elif tcontrol[i].find("\\end")!= -1  and tcontrol[i].find("{mdframed}") != -1 :
+                w = w+"</div>"
             elif tcontrol[i].find("\\begin") !=-1 and tcontrol[i].find("{center}")!= -1 :
                 w = w+"<p align=center>"
             elif tcontrol[i].find("\\end")!= -1  and tcontrol[i].find("{center}") != -1 :
@@ -909,6 +913,11 @@ html_output += """
 
 .titleblock {
     text-align: center;
+}
+
+.framed {
+    border: 1px solid black;
+    padding: 10px;
 }
 </style>
 <script type="text/javascript">
