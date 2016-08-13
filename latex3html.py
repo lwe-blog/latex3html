@@ -110,6 +110,8 @@ def extractmacros(m) :
         if line.startswith("\\newcommand") or \
                 line.startswith("\\renewcommand") or \
                 line.startswith("\\providecommand") or \
+                line.startswith("\\let") or \
+                line.startswith("\\DeclareMathOperator") or \
                 line.startswith("\\DeclareMathOperator*"):
             macros += line + "\n"
         else:
@@ -480,6 +482,7 @@ def convertcite (m) :
             return "[<a href='#%s'>%s</a>]" % ('ref-' + refname, refname)
 
     print "Warning: \cite to unknown reference."
+    print m
     return m
 
 def maketitle():
@@ -602,7 +605,7 @@ def convertfootnote(fnote):
     fnum = numfootnotes
     fname = 'footnote%d' % fnum
     snote = "<span class='sidenote' id='{0}'><a name='{0}' href='#{0}'>{1}.</a> {2} </span>".format(fname, fnum, fnote)
-    marker = "<sup><a href='#{0}' onclick=\"toggle_display_nojump('{0}');\">{1}</a></sup>".format(fname, fnum)
+    marker = "<sup class='footnotemark'><a href='#{0}' onclick=\"toggle_display_nojump('{0}');\">{1}</a></sup>".format(fname, fnum)
     return marker + snote
 
 
@@ -864,20 +867,7 @@ s =  processfootnotes(s)
 
 html_output = ""
 
-if not args.bodyonly:
-    html_output += """
-<html>
-<head>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  tex2jax: {inlineMath: [['$','$']]},
-  TeX: { equationNumbers: { autoNumber: "AMS" } }
-  });
-</script>
-<script type="text/javascript" async
-    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
-<style>
+css = """
 body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     max-width:55em;
@@ -885,16 +875,13 @@ body {
 a:link { color:#4444aa; }
 a:visited {color:#4444aa;}
 a:hover {background-color:#aaaaFF;}
-</style>
-</head>
-<body>
-"""
 
-html_output += """
-<style>
+sup {
+    font-weight: bold;
+}
+
 .sidenote {
     top: auto;
-    float: left;
 
     display: none;
     margin: 10px;
@@ -919,8 +906,38 @@ html_output += """
     border: 1px solid black;
     padding: 10px;
 }
+"""
+
+
+if not args.bodyonly:
+    html_output += """
+<html>
+<head>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$']]},
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+  });
+</script>
+<script type="text/javascript" async
+    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_HTMLorMML">
+</script>
+<style>
+""" + css + """
 </style>
+</head>
+<body>
+"""
+else:
+    # just write out CSS to file
+    fcss=open('tex-style.css',"w")
+    fcss.write(css)
+    fcss.close()
+
+
+html_output += """
 <script type="text/javascript">
+    // javascript for toggling sidenotes
     function toggle_display_nojump(id) {
        event.preventDefault();
        var e = document.getElementById(id);
