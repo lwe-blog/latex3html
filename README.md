@@ -38,3 +38,10 @@ optional arguments:
   --bodyonly         output only the HTML body, and no titleblock (useful for
                      embedding in a blog)
 ```
+
+# Known Bugs
+
+- Bibliography rendering somewhat broken with special characters
+(see http://learningwitherrors.org/2016/06/03/small-bias/).
+
+- Nesting \cite within a theorem/proof name doesn't work.
