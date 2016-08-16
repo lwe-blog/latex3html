@@ -357,7 +357,8 @@ def convertbeginnamedthm(thname,thm) :
   inthm = thm
   t = beginnamedthm.replace("_ThmType_",thm.capitalize())
   t = t.replace("_ThmNumb_",str(count[T[thm]]))
-  t = t.replace("_ThmName_",thname)
+  #t = t.replace("_ThmName_",thname)
+  t = t.replace("_ThmName_",process_cites(thname))
   return(t)
 
 def convertbeginthm(thm) :
@@ -485,6 +486,28 @@ def convertcite (m) :
     print m
     return m
 
+def process_cites(t):
+    """ Process all citations in a string, returning the strings with [HTML] citations
+    in place """
+
+    p = re.compile("\\\\cite\\s*\\{.*?}"
+            "|\\\\cite\\[.*?\\]\\{.*?}")
+
+    ttext = p.split(t)
+    tcontrol = p.findall(t)
+
+    w = ttext[0]
+
+    i=0
+    while i < len(tcontrol) :
+        w=w+convertcite(tcontrol[i])
+
+        w += ttext[i+1]
+        i += 1
+
+    return w
+
+
 def maketitle():
     global bodyonly
     if bodyonly:
@@ -566,7 +589,7 @@ def processtext ( t ) :
                 w = w+convertimage(tcontrol[i])
             elif tcontrol[i].find("\\sout") != -1 :
                 w = w+convertstrike(tcontrol[i])
-            elif tcontrol[i].find("\\cite") != -1 :
+            elif tcontrol[i].startswith("\\cite") :
                 w=w+convertcite(tcontrol[i])
             elif tcontrol[i].find("\\maketitle") != -1 :
                 w = w+maketitle()
