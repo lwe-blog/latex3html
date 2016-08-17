@@ -43,5 +43,3 @@ optional arguments:
 
 - Bibliography rendering somewhat broken with special characters
 (see http://learningwitherrors.org/2016/06/03/small-bias/).
-
-- Nesting \cite within a theorem/proof name doesn't work.
